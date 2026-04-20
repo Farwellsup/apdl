@@ -1,0 +1,55 @@
+.bg-primary {
+    background-color: var(--primary);
+}
+
+.bg-secondary {
+    background-color: var(--secondary);
+}
+
+.bg-tertiary {
+    background-color: var(--tertiary);
+}
+
+.logo-container {
+    display: block;
+    width: 300px;
+    height: 85px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.brand-logo {
+    background-image: var(--logo);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.primary-button {
+    background-color: var(--primary);
+    color: var(--white);
+}
+
+.primary-button:hover {
+    background-color: var(--tertiary);
+    color: var(--white);
+}
+
+.secondary-button {
+    background-color: var(--secondary);
+    color: var(--white);
+}
+
+.tertiary-button {
+    background-color: var(--tertiary);
+    color: var(--white);
+}
+
+.menu {
+    color: var(--menu-color);
+}
+
+.menu-active {
+    color: var(--menu-active-color);
+}
