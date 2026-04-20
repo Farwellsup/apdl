@@ -159,7 +159,7 @@
                     <label for="user_list" class="input__label"> User File</label>
                     <div class="fileField">
                         <div class="fileField__trigger">
-                            <input type="file" name="user_list[en]" id="fileInput" style="display: none;">
+                            <input type="file" name="user_list" id="fileInput" style="display: none;">
                             <button data-v-59eeac35="" type="button" onclick="document.getElementById('fileInput').click()"
                                 class="button button--ghost">Upload file</button>
                             <span class="fileField__note f--small">Add excel sheet with users details.</span>

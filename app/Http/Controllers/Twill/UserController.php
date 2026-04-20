@@ -17,6 +17,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\View;
 use A17\Twill\Services\Forms\Form;
 use A17\Twill\Models\Contracts\TwillModelContract;
+use App\Http\Requests\Twill\UploadUsers;
+use App\Imports\UserImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends TwillUserController
 {
@@ -116,8 +119,58 @@ class UserController extends TwillUserController
     }
 
 
-    public function uploadStore(Request $request)
+    public function uploadStore(UploadUsers $request)
     {
+
+      try {
+            // Ensure file is uploaded
+            if (!request()->hasFile('user_list')) {
+                return redirect()->back()->withErrors('Please upload a file.');
+            }
+
+            Excel::import(new UserImport($request->company_id), request()->file('user_list'));
+
+            // $status = Session::get('deactivated');
+
+            // switch ($status) {
+            //     case 'Yes':
+            //         Session::flash('status', 'Users restored successfully.');
+            //         return redirect()->route('admin.users.index');
+
+            //     case 'Empty':
+            //         return redirect()->back()->withErrors('Uploaded file is empty.');
+
+            //     case 'No':
+            //         return redirect()->back()->withErrors('File must contain a column labeled "email_address" as the first and only column');
+
+            //     case 'Active':
+            //         return redirect()->back()->withErrors('Users are already active.');
+
+            //     case 'NoMatches':
+            //         return redirect()->back()->withErrors('Kindly confirm your file contains trashed users');
+
+            //     default:
+            //         return redirect()->back()->withErrors('Unexpected error occurred during restoration.');
+            // }
+        } catch (\Throwable $e) {
+            dd($e);
+            \Log::error('User restore import failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return redirect()->back()->withErrors('Something went wrong. Please try again.');
+        }
+
+
+
+
+
+
+    //   if(request()->file('user_list')){
+
+    //     Excel::import(new UserImport, request()->file('user_list'));
+
+        
+    //   }
 
     dd($request);
 
