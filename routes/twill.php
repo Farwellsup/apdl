@@ -18,3 +18,6 @@ Route::get('/getDepartments/{id}', [UnitController::class, 'getDepartments']);
 
 Route::get('userUpload', [UserController::class, 'uploadForm'])->name('uploadForm');
 Route::post('/userUpload', [UserController::class, 'uploadStore'])->name('uploadUsers');
+Route::get('/check-export-status', [UserController::class, 'checkStatus'])->name('uploadUsers.status');
+Route::get('/download-uploadUsers/{file}', [UserController::class, 'download'])->name('uploadUsers.download');
+

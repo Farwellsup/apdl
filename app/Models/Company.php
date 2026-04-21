@@ -79,4 +79,15 @@ class Company extends Model implements Sortable
         ],
 
     ];
+
+
+    public function departments()
+    {
+        return $this->hasMany(Department::class);
+    }
+
+    public function units()
+    {
+        return $this->hasMany(Unit::class);
+    }
 }

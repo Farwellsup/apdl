@@ -49,6 +49,8 @@ class User extends TwillUser implements TwillModelContract
         'gender_id',
         'profile_pic',
         'initial_profile',
+        'role_id',
+        'published'
     ];
 
     /**

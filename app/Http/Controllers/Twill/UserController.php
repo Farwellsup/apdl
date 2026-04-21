@@ -20,6 +20,11 @@ use A17\Twill\Models\Contracts\TwillModelContract;
 use App\Http\Requests\Twill\UploadUsers;
 use App\Imports\UserImport;
 use Maatwebsite\Excel\Facades\Excel;
+use Storage;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
+use App\Services\UserImportService;
+use App\Jobs\ProcessUserUploadJob;
 
 class UserController extends TwillUserController
 {
@@ -92,7 +97,7 @@ class UserController extends TwillUserController
             ->with(['formBuilder' => $form->toFrontend(isCreate: true)]);
     }
 
-    
+
 
 
     protected function indexData($request)
@@ -105,95 +110,75 @@ class UserController extends TwillUserController
     }
 
 
-    public function uploadForm(){
-       
-    if (hasRole(['Owner', 'Administrator'])) {
-        $companyList = Company::pluck('title', 'id');
-
-    } elseif (hasRole(['Company HR'])) {
-        $companyList = Company::where('id', Auth::user()->company_id)->pluck('title', 'id');
-    }
-
-    return view('twill.users.uploadUsers', compact('companyList'));
-      
-    }
-
-
-    public function uploadStore(UploadUsers $request)
+    public function uploadForm()
     {
 
-      try {
-            // Ensure file is uploaded
-            if (!request()->hasFile('user_list')) {
-                return redirect()->back()->withErrors('Please upload a file.');
-            }
-
-            Excel::import(new UserImport($request->company_id), request()->file('user_list'));
-
-            // $status = Session::get('deactivated');
-
-            // switch ($status) {
-            //     case 'Yes':
-            //         Session::flash('status', 'Users restored successfully.');
-            //         return redirect()->route('admin.users.index');
-
-            //     case 'Empty':
-            //         return redirect()->back()->withErrors('Uploaded file is empty.');
-
-            //     case 'No':
-            //         return redirect()->back()->withErrors('File must contain a column labeled "email_address" as the first and only column');
-
-            //     case 'Active':
-            //         return redirect()->back()->withErrors('Users are already active.');
-
-            //     case 'NoMatches':
-            //         return redirect()->back()->withErrors('Kindly confirm your file contains trashed users');
-
-            //     default:
-            //         return redirect()->back()->withErrors('Unexpected error occurred during restoration.');
-            // }
-        } catch (\Throwable $e) {
-            dd($e);
-            \Log::error('User restore import failed: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
-            return redirect()->back()->withErrors('Something went wrong. Please try again.');
+        if (hasRole(['Owner', 'Administrator'])) {
+            $companyList = Company::pluck('title', 'id');
+        } elseif (hasRole(['Company HR'])) {
+            $companyList = Company::where('id', Auth::user()->company_id)->pluck('title', 'id');
         }
 
-
-
-
-
-
-    //   if(request()->file('user_list')){
-
-    //     Excel::import(new UserImport, request()->file('user_list'));
-
-        
-    //   }
-
-    dd($request);
-
-        // Excel::import(new LicenseImport, request()->file('file'));
-
-        // $name = Session::get('uploaded');
-
-        // if ($name === 'Yes') {
-
-        //     Session::flash('status', 'Import Successful');
-
-        //     return redirect()->route('admin.accounts.allowedAccounts.index');
-        // }
+        return view('twill.users.uploadUsers', compact('companyList'));
     }
 
-  
+
+    public function uploadStore(UploadUsers $request, UserImportService $userImportService)
+    {
+        try {
+
+           $company = Company::findOrFail($request->company_id);
+
+            $fileName = 'Africa_Poultry_Development_Learning' . '_' . str_replace(' ', '_', $company->title) . '_user_credentials_' . now()->format('d-M-Y_Hi') . '.xlsx';
+
+            $rows = Excel::toArray(new UserImport, request()->file('user_list'))[0];
+
+            // dispatch job synchronously OR async depending on your need
+            ProcessUserUploadJob::dispatch($rows, $request->company_id, $fileName);
+
+           
+            Session::flash('download_url', $fileName);
+            Session::flash('status', 'The User Upload has been initiated. The file will be downloaded once done. Please don\'t close this page.');
+            return redirect()->route('twill.users.index')->with('download_url', $fileName);
+
+        } catch (\Throwable $e) {
+            
+                \Log::error('User upload failed: ' . $e->getMessage());
+                return redirect()->back()->withErrors('Failed to process the file. Please ensure it is correctly formatted and try again.');
+           
+        }
+    }
+
+    // Check if file is ready
+    public function checkStatus(Request $request)
+    {
+        $fileName = $request->query('file');
+        $filePath = 'exports/' . $fileName;
+
+        if (Storage::disk('public')->exists($filePath)) {
+            return response()->json([
+                'ready' => Storage::disk('public')->exists($filePath),
+                'url' => Storage::disk('public')->exists($filePath) ? Storage::disk('public')->url($filePath) : null
+            ]);
+        } else {
+            $filePath = "exports/'" . $fileName . "'";
+
+            return response()->json([
+                'ready' => Storage::disk('public')->exists($filePath),
+                'url' => Storage::disk('public')->exists($filePath) ? Storage::disk('public')->url($filePath) : null
+            ]);
+        }
+    }
+
+    // Download endpoint
+    public function download(string $file)
+    {
+        return \Storage::download("exports/{$file}");
+    }
 
 
     public function store($parentModuleId = null)
     {
-
-
-
 
         $this->authorizeOption('create', $this->moduleName);
 
@@ -201,7 +186,7 @@ class UserController extends TwillUserController
 
         $input = $this->request->all();
 
-          
+
         dd($input);
 
 

@@ -1,6 +1,45 @@
 @extends('twill::layouts.free')
 @push('extra_css')
     <style>
+        .select__input {
+            display: block;
+            position: relative;
+            border: 1px solid #d9d9d9;
+            background-color: #fff;
+            border-radius: 2px;
+            cursor: pointer;
+            height: 35px;
+        }
+
+        .select__input--large {
+            height: 45px;
+        }
+
+        .select__input::after {
+            width: 0;
+            height: 0;
+            margin-top: -3px;
+            border-width: 4px 4px 0;
+            border-style: solid;
+        }
+
+        .select__input::after,
+        .select__input:focus::after,
+        .select__input:hover::after {
+            border-color: #a6a6a6 transparent transparent;
+        }
+
+        .select__input::after {
+            content: " ";
+            position: absolute;
+            top: 50%;
+            right: 1em;
+            z-index: 2;
+            pointer-events: none;
+            display: none;
+            display: block;
+        }
+
         .select__input select {
             font-size: 15px;
             line-height: 33px;
@@ -43,7 +82,8 @@
         .select__input--large {
             height: 45px;
         }
-         .input {
+
+        .input {
             margin-top: 35px;
             position: relative;
         }
@@ -135,11 +175,11 @@
             <h1> Upload Accounts </h1>
         </div>
 
-        <div >
-            <div   class="input input-wrapper-company_id">
-                <label  for="company_id-1776678186037" class="input__label"> Company
-                    <span  class="input__required">*</span><!----><!----></label><!---->
-                <span   class="select__input select__input--large">
+        <div>
+            <div class="input input-wrapper-company_id">
+                <label for="company_id-1776678186037" class="input__label"> Company
+                    <span class="input__required">*</span><!----><!----></label><!---->
+                <span class="select__input select__input--large">
 
                     <select name="company_id" class="form-control">
                         <option value="">Select Company</option>
@@ -152,7 +192,7 @@
             </div><!---->
         </div>
 
-      
+
         <div class="locale">
             <div class="locale__item">
                 <div data-lang="en" fieldname="user_list" initialvalue="" class="input input-wrapper-user_list">
@@ -162,6 +202,9 @@
                             <input type="file" name="user_list" id="fileInput" style="display: none;">
                             <button data-v-59eeac35="" type="button" onclick="document.getElementById('fileInput').click()"
                                 class="button button--ghost">Upload file</button>
+                             <span id="fileName" class="fileField__note f--small" style="float: none;left: 11%;">
+                        No file selected
+                    </span>
                             <span class="fileField__note f--small">Add excel sheet with users details.</span>
                         </div>
                     </div>
@@ -170,9 +213,10 @@
         </div>
 
 
-     
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">Submit
+
+        <div class="card-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+            <button type="submit" class="button button--small button--validate"
+                style="background: #1d9f3c;color: #fff;">Submit
             </button>
         </div>
 
@@ -180,3 +224,26 @@
 
 
 @stop
+
+@push('extra_js')
+    <script>
+      
+         document.addEventListener('change', async function(e) {
+
+            if (e.target.id === 'fileInput') {
+
+                var fileName = e.target.files[0] ? e.target.files[0].name : 'No file selected';
+                document.getElementById('fileName').textContent = fileName;
+
+            }
+        });
+
+    </script>
+@endpush
+
+
+@if(session('download_url'))
+<script>
+    window.location.href = "{{ session('download_url') }}";
+</script>
+@endif

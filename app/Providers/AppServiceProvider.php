@@ -31,5 +31,7 @@ class AppServiceProvider extends ServiceProvider
                 config(['twill-navigation-set' => true]);
             }
         });
+
+      
     }
 }
