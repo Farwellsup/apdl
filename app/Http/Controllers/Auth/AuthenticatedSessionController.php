@@ -21,6 +21,8 @@ class AuthenticatedSessionController extends Controller
     {
         $this->authManager = $authManager;
 
+         $this->edxRepository = $this->getEdxRepository();
+
         
     }
     /**
@@ -42,8 +44,6 @@ class AuthenticatedSessionController extends Controller
         try {
 
             $user = User::where('payroll_number', $request->input('payroll_number'))->first();
-
-      
 
             if (!$user) {
                 return redirect()->route('login')->withErrors([
@@ -70,7 +70,7 @@ class AuthenticatedSessionController extends Controller
 
             } else {
 
-                $edxStatus  =   App::environment(['local', 'staging']) ? true : $this->edxLogin($request);
+                $edxStatus  =   App::environment(['local', 'staging']) ? true : $this->edxRepository->edxLogin($user, $request->input('password'));
 
                 if (!$edxStatus) {
 
@@ -108,6 +108,13 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('login')->with('error', 'Something went wrong! Kindly try again or contact the administrator');
         }
     }
+
+
+      protected function getEdxRepository()
+    {
+        return App::make("App\\Repositories\\AuthenticateEdxRepository");
+    }
+
 
     /**
      * Destroy an authenticated session.
