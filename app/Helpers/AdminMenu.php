@@ -4,6 +4,31 @@ if (!function_exists('adminMenu')) {
     function adminMenu()
     {
         return [
+                 'content' => [
+                'title' => 'Content',
+                'route' => 'twill.pages.index',
+                'primary_navigation' => [
+                    'pages' => [
+                        'title' => 'Pages',
+                        'module' => true,
+                    ],
+                    'menus' => [
+                        'title' => 'Menus',
+                        'route' => 'twill.menus.index',
+                        'secondary_navigation' => [
+                            'menus' => [
+                                'title' => 'Menus',
+                                'module' => true,
+                            ],
+                            'menuTypes' => [
+                                'title' => 'Menu Types',
+                                'module' => true,
+                        ]
+
+                    ]
+                ],
+            ],
+         ],
             'companies' => [
                 'title' => 'Companies',
                 'module' => true,
@@ -23,10 +48,22 @@ if (!function_exists('adminMenu')) {
             //     'module' => true,
             // ],
 
-            'platformSettings' =>[
+            'settings' => [
                 'title' => 'Settings',
+                'route' => 'twill.platformSettings.index',
+                'primary_navigation' => [
+                    'platformSettings' => [
+                        'title' => 'Platform Settings',
+                        'module' => true,
+                    ],
+                     'countries' =>[
+                'title' => 'Countries',
                 'module' => true,
             ]
+                    
+                ]
+            ]
+           
 
         ];
     }

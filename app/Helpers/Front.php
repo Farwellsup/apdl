@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\PlatformSetting;
+use App\Models\Company;
 use App\Models\Menu;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,12 +16,8 @@ if (!function_exists('companyBranding')) {
          return $company->theme_css_path;
       } else {
 
-  
-
-         $company = PlatformSetting::where('id', Auth::user()->company_id)->first();
-
-
-
+         $co = Company::where('id', Auth::user()->company_id)->first();
+         $company = PlatformSetting::where('id', $co->platform_settings_id)->first();
 
          return $company->theme_css_path;
       }

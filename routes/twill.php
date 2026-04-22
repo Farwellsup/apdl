@@ -21,3 +21,8 @@ Route::post('/userUpload', [UserController::class, 'uploadStore'])->name('upload
 Route::get('/check-export-status', [UserController::class, 'checkStatus'])->name('uploadUsers.status');
 Route::get('/download-uploadUsers/{file}', [UserController::class, 'download'])->name('uploadUsers.download');
 
+
+TwillRoutes::module('pages');
+TwillRoutes::module('menuTypes');
+TwillRoutes::module('menus');
+TwillRoutes::module('countries');

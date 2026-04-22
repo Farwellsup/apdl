@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UploadedUsers;
+use App;
 
 class UserImportService
 {
@@ -48,6 +49,7 @@ class UserImportService
                 $payroll = $row['payroll_number'];
 
                 $email = $payroll . '@' . $company->id . '.com';
+
                 $password = Str::random(9);
 
                 // collect credentials for export
@@ -80,7 +82,6 @@ class UserImportService
                         'registered_at' => now()
                     ]);
 
-     
 
                     $existingUsers[$payroll] = $user->id;
 
@@ -91,6 +92,9 @@ class UserImportService
 
                     // register user on edX
                    (App::environment(['local', 'staging'])) ? true :  $this->registerEdx($user, $password);
+
+
+                  var_dump($password);
 
                 }
             }

@@ -134,7 +134,11 @@ class UserController extends TwillUserController
             $rows = Excel::toArray(new UserImport, request()->file('user_list'))[0];
 
             // dispatch job synchronously OR async depending on your need
-            ProcessUserUploadJob::dispatch($rows, $request->company_id, $fileName);
+
+        //    $r= $userImportService->handle($rows, $request->company_id, $fileName);
+
+        //    dd($r);
+             ProcessUserUploadJob::dispatch($rows, $request->company_id, $fileName);
 
            
             Session::flash('download_url', $fileName);

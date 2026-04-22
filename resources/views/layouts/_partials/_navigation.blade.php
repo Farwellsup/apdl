@@ -3,25 +3,32 @@
         <div class="flex justify-between items-center h-24">
             <!-- Logo -->
             <div class="flex items-center">
-                <a href="{{ route('welcome') }}" class="flex items-center group">
+                <a href="{{ route('home') }}" class="flex items-center group">
                     <div class="logo-container brand-logo  flex ">
 
                     </div>
                 </a>
             </div>
+           
+          
 
-            {{-- <!-- Desktop Navigation - Centered -->
+            <!-- Desktop Navigation - Centered -->
             @auth
                 <div class="hidden lg:flex items-center space-x-8">
                     @foreach (mainMenu() as $menu)
-                        <a href="{{ route($menu->key) }}"
-                            class="
-                                text-md menu hover:menu-active transition-colors duration-200
-                                {{ request()->routeIs($menu->key) ? 'menu-active font-bold' : '' }}
-                            ">{!! $menu->title !!}</a>
+
+                      @if (Request::segment(2) == $menu['key'] || strpos(\Route::current()->getName(), $menu['key']) !== false)
+                        <a href="{{ route('pages', ['key' => $menu['key']]) }}"
+                            class="text-md menu hover:menu-active transition-colors duration-200 menu-active font-bold">{!! $menu->title !!}</a>
+
+                      @else 
+                        <a href="{{ route('pages', ['key' => $menu['key']]) }}" class="text-md menu hover:menu-active transition-colors duration-200 ">{!! $menu->title !!}</a>
+
+                      @endif
+                       
                     @endforeach
                 </div>
-            @endauth --}}
+            @endauth
 
 
             <!-- Right Side Actions -->

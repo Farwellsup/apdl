@@ -20,6 +20,8 @@ class AuthenticatedSessionController extends Controller
     public function __construct(AuthManager $authManager)
     {
         $this->authManager = $authManager;
+
+        
     }
     /**
      * Display the login view.
@@ -41,6 +43,8 @@ class AuthenticatedSessionController extends Controller
 
             $user = User::where('payroll_number', $request->input('payroll_number'))->first();
 
+      
+
             if (!$user) {
                 return redirect()->route('login')->withErrors([
 
@@ -57,6 +61,7 @@ class AuthenticatedSessionController extends Controller
 
             $credentials = ['payroll_number' => $request->input('payroll_number'), 'password' => $request->input('password')];
 
+
             if (!Auth::attempt($credentials)) {
 
                 return redirect()->route('login')->withErrors([
@@ -64,7 +69,6 @@ class AuthenticatedSessionController extends Controller
                 ])->onlyInput('payroll_number');
 
             } else {
-
 
                 $edxStatus  =   App::environment(['local', 'staging']) ? true : $this->edxLogin($request);
 
@@ -83,10 +87,10 @@ class AuthenticatedSessionController extends Controller
                     $user->last_login_at = Carbon::now();
                     $user->save();
 
-                    // return redirect()->route('pages', ['key' => 'courses']);
+                 
                     $request->session()->regenerate();
 
-                    return redirect()->route('home');
+                    return redirect()->route('pages', ['key' => 'courses']);
                 } else {
 
 
@@ -95,8 +99,8 @@ class AuthenticatedSessionController extends Controller
 
                     $request->session()->regenerate();
 
-                    return redirect()->route('home');
-                    // return redirect()->route('pages', ['key' => 'courses']);
+   
+                    return redirect()->route('pages', ['key' => 'courses']);
                 }
             }
         } catch (Exception $e) {

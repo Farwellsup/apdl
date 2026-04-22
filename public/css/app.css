@@ -1,3 +1,13 @@
+.primary{
+    color:var(--primary);
+}
+.secondary{
+    color:var(--secondary);
+}
+.tertiary{
+    color:var(--tertiary);
+}
+
 .bg-primary {
     background-color: var(--primary);
 }

@@ -20,7 +20,7 @@
                 {{ $slot }}
 
 
-                 @include('layouts._partials._global')
+                 @include('layouts._partials._components')
             </main>
         </div>
     </body>

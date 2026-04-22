@@ -72,7 +72,11 @@ return [
             'companies',
             'departments',
             'jobRoles',
-            'units'
+            'units',
+            'pages',
+            'menuTypes',
+            'menus',
+            'countries',
         ]
     ],
 

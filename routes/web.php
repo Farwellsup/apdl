@@ -1,20 +1,20 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Front\ProfileController;
+use App\Http\Controllers\Front\PagesController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+Route::get('/', [PagesController::class, 'index'])->name('home');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('home');
+
 
 Route::middleware('auth')->group(function () {
+   
+  Route::any('/pages/{key}', [PagesController::class, 'pages'])->name('pages');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+  
 });
 
 require __DIR__.'/auth.php';

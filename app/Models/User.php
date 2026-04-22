@@ -14,6 +14,11 @@ class User extends TwillUser implements TwillModelContract
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+
+     const GENDER_FEMALE = 1;
+    const GENDER_MALE = 2;
+    const GENDER_UNDEFINED = 3;
+
     public function __construct(array $attributes = [])
     {
         $this->table = config('twill.users_table', 'twill_users');
@@ -50,7 +55,11 @@ class User extends TwillUser implements TwillModelContract
         'profile_pic',
         'initial_profile',
         'role_id',
-        'published'
+        'published',
+        'last_login_at',
+        'registered_at',
+        'policy_agree',
+        'reset_pd'
     ];
 
     /**
@@ -82,6 +91,25 @@ class User extends TwillUser implements TwillModelContract
         return in_array(optional($this->role)->name, (array) $roles);
     }
 
+     public static function getGender()
+    {
+        $types = array(
+            array(
+                'id' => self::GENDER_FEMALE,
+                'title'=>'Female'
+            ),
+            array(
+                'id' => self::GENDER_MALE,
+                'title'=>'Male'
+            ),
+            array(
+                'id' => self::GENDER_UNDEFINED,
+                'title'=>'Undefined'
+            ),
+        );
+        return $types;
+    }
+
 
     public function company()
     {
@@ -93,6 +121,20 @@ class User extends TwillUser implements TwillModelContract
         return $this->belongsTo(Role::class);
     }
 
+
+     public function unit()
+    {
+        return $this->belongsTo(Unit::class);
+    }
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+    
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
 
     public function getNameValueAttribute()
     {

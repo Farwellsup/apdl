@@ -9,7 +9,7 @@
 
       @yield('content')
 
-    @include('layouts._partials._global')
+    @include('layouts._partials._components')
     </div>
 </body>
 
