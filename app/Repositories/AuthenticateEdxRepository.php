@@ -191,8 +191,6 @@ class AuthenticateEdxRepository extends TwillUserRepository
     {
         $configLms = config()->get("settings.lms.live");
 
-   
-
         //Validate user
         if ($user === null) {
             return;
@@ -207,7 +205,7 @@ class AuthenticateEdxRepository extends TwillUserRepository
             'name' => $user->first_name . ' ' . $user->last_name,
             'first_name' => $user->first_name,
             'last_name' => $user->last_name,
-            'username' => $user->username,
+            'username' => $user->payroll_number,
             'honor_code' => 'true',
             'password' => $pass,
             'country' => 'KE',
