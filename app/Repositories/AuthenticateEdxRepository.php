@@ -18,7 +18,7 @@ class AuthenticateEdxRepository extends TwillUserRepository
         $configLms = config()->get("settings.lms.live");
         $configApp = config()->get("settings.app");
 
-        $username = $user->payroll_number;
+        $email = $user->email;
         $password = $password;
 
         
@@ -47,10 +47,11 @@ class AuthenticateEdxRepository extends TwillUserRepository
         }
 
         $data = [
-            'username' => $username,
+            'email' => $email,
             'password' => $password,
         ];
 
+  
 
         $headers = [
             'Content-Type' => ' application/x-www-form-urlencoded ; charset=UTF-8',
@@ -144,7 +145,7 @@ class AuthenticateEdxRepository extends TwillUserRepository
             'grant_type' => 'password',
             'client_id' => $configLms['EDX_KEY'],
             'client_secret' => $configLms['EDX_SECRET'],
-            'username' => $username,
+            'username' => $user->payroll_number,
             'password' => $password,
             // 'token_type'=>'jwt',
         ];
