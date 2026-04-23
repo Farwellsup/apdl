@@ -103,7 +103,7 @@ class UserImportService
 
                         if ($register !== true) {
                             // log error
-                            \Log::error("Failed to register user {$user->email} on edX: {$register}");
+                            \Log::error("Failed to register user {$user->email} on edX: {json_encode($register)}");
                         }
                     } else {
 
@@ -123,7 +123,7 @@ class UserImportService
 
                         if ($register !== true) {
                             // log error
-                            \Log::error("Failed to register existing user {$user->email} on edX: {$register}");
+                            \Log::error("Failed to register existing user {$user->email} on edX: {json_encode($register)}");
                         }
                     }
                 }
