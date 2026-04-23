@@ -9,7 +9,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UploadedUsers;
+use App\Edx\EdxAuthUser;
+use Ixudra\Curl\Facades\Curl;
+use GuzzleHttp\Client;
+use Illuminate\Support\Arr;
 use App;
+use App\Repositories\AuthenticateEdxRepository;
 
 class UserImportService
 {
@@ -91,19 +96,36 @@ class UserImportService
                         'position' => encrypt($password),
                     ]);
 
+                    $edxUser = EdxAuthUser::where('username', $existingUsers[$payroll])->first();
+
+                    if (!$edxUser) {
+                        $register =  (App::environment(['local', 'staging'])) ? true : app(AuthenticateEdxRepository::class)->edxRegister($user, $password);
+
+                        if ($register !== true) {
+                            // log error
+                            \Log::error("Failed to register user {$user->email} on edX: {$register}");
+                        }
+                    } else {
+
+                        \Log::info("User {$user->email} already exists on edX");
+
+                        app(AuthenticateEdxRepository::class)->resetEdxPassword($user, $password);
+                    }
 
                     // register user on edX
-                    $register =  (App::environment(['local', 'staging'])) ? true :  $this->registerEdx($user, $password);
 
-                    if ($register !== true) {
-                        // log error
-                        \Log::error("Failed to register user {$user->email} on edX: {$register}");
+                } else {
+                    $edxUser = EdxAuthUser::where('username', $existingUsers[$payroll])->first();
+
+                    if (!$edxUser) {
+                        $user = User::find($existingUsers[$payroll]);
+                        $register =  (App::environment(['local', 'staging'])) ? true : app(AuthenticateEdxRepository::class)->edxRegister($user, $password);
+
+                        if ($register !== true) {
+                            // log error
+                            \Log::error("Failed to register existing user {$user->email} on edX: {$register}");
+                        }
                     }
-                }else{
-
-
-
-                
                 }
             }
         }
