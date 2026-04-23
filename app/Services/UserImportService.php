@@ -48,12 +48,13 @@ class UserImportService
 
                 $payroll = $row['payroll_number'];
 
-                $email = $payroll . '@' . $company->id . '.com';
+                $email = $payroll . '@' . str_replace(' ', '-', $company->title) . '.com';
 
                 $password = Str::random(9);
 
                 // collect credentials for export
                 $data[] = [
+                    'name' => $row['name'],
                     'payroll_number' => $payroll,
                     'password' => $password,
                 ];
@@ -76,7 +77,7 @@ class UserImportService
                         'department_name' => $department?->title,
                         'unit_id' => $unit?->id,
                         'unit_name' => $unit?->title,
-                        'role_id' => 4,
+                        'role_id' => 5,
                         'published' => 1,
                         'email_verified_at' => now(),
                         'registered_at' => now()
@@ -85,16 +86,9 @@ class UserImportService
 
                     $existingUsers[$payroll] = $user->id;
 
-                    TwillPosition::create([
-                        'user_id' => $user->id,
-                        'position' => encrypt($password),
-                    ]);
-
                     // register user on edX
                    (App::environment(['local', 'staging'])) ? true :  $this->registerEdx($user, $password);
 
-
-                  var_dump($password);
 
                 }
             }

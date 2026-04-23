@@ -11,8 +11,13 @@ use Illuminate\Http\JsonResponse;
 use A17\Twill\Services\Forms\Fields\BaseFormField;
 use A17\Twill\Services\Forms\Fields\BlockEditor;
 use A17\Twill\Services\Forms\Fields\Repeater;
-use A17\Twill\Services\Forms\Fields\Input;
-use A17\Twill\Services\Forms\Fields\Files;
+use A17\Twill\Enums\PermissionLevel;
+use A17\Twill\Facades\TwillPermissions;
+use A17\Twill\Services\Listings\Columns\Image;
+use A17\Twill\Services\Listings\Columns\Text;
+use A17\Twill\Services\Listings\Filters\QuickFilter;
+use A17\Twill\Services\Listings\Filters\QuickFilters;
+use A17\Twill\Services\Listings\TableColumns;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\View;
 use A17\Twill\Services\Forms\Form;
@@ -25,6 +30,12 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use App\Services\UserImportService;
 use App\Jobs\ProcessUserUploadJob;
+use App\Models\Department;
+use App\Models\Unit;
+use App\Models\Country;
+
+use Illuminate\Support\Facades\Auth;
+
 
 class UserController extends TwillUserController
 {
@@ -40,6 +51,44 @@ class UserController extends TwillUserController
         'sortable' => true,
     ];
 
+
+    protected function formData($request)
+    {
+        $currentUser = $this->authFactory->guard('twill_users')->user();
+
+        if (TwillPermissions::levelIs(PermissionLevel::LEVEL_ROLE_GROUP_ITEM)) {
+            $permissionsData = [
+                'permissionModules' => $this->getPermissionModules(),
+            ];
+        }
+
+        $isGroupHr = $currentUser->hasRole('Group HR') || $currentUser->role_id === 3;
+        $isCompanyHr = $currentUser->hasRole('Company HR') || $currentUser->role_id === 4;
+
+        $companyOptions = collect($isCompanyHr ? Company::published()->where('id', $currentUser->company_id)->pluck('title', 'id')->toArray() : Company::published()->pluck('title', 'id')->toArray())->map(function ($item, $key) {
+            return ['value' => $key, 'label' => $item];
+        })->values()->toArray();
+        $unitOptions = collect($isCompanyHr ? Unit::published()->where('id', $currentUser->company_id)->pluck('title', 'id')->toArray() : Unit::published()->pluck('title', 'id')->toArray())->map(function ($item, $key) {
+            return ['value' => $key, 'label' => $item];
+        })->values()->toArray();
+        $departmentOptions = collect($isCompanyHr ? Department::published()->where('id', $currentUser->company_id)->pluck('title', 'id')->toArray() : Department::published()->pluck('title', 'id')->toArray())->map(function ($item, $key) {
+            return ['value' => $key, 'label' => $item];
+        })->values()->toArray();
+        $countryOptions = collect(Country::published()->pluck('title', 'id')->toArray())->map(function ($item, $key) {
+            return ['value' => $key, 'label' => $item];
+        })->values()->toArray();
+
+
+        return [
+            'roleList' => $this->getRoleList(),
+            'isGroupHr' => $isGroupHr,
+            'isCompanyHr' => $isCompanyHr,
+            'companyOptions' => $companyOptions,
+            'unitOptions' => $unitOptions,
+            'departmentOptions' => $departmentOptions,
+            'countryOptions' => $countryOptions,
+        ] + ($permissionsData ?? []);
+    }
 
     /**
      * @return IlluminateView|JsonResponse
@@ -110,6 +159,108 @@ class UserController extends TwillUserController
     }
 
 
+       private function getRoleList()
+    {
+        if (config('twill.enabled.permissions-management')) {
+            return twillModel('role')::accessible()->published()->get()->map(function ($role) {
+                return ['value' => $role->id, 'label' => $role->name];
+            })->toArray();
+        }
+
+        return collect(TwillPermissions::roles()::toArray())->map(function ($item, $key) {
+            return ['value' => $key, 'label' => $item];
+        })->values()->toArray();
+    }
+
+
+
+
+    public function getIndexTableColumns(): TableColumns
+    {
+        $tableColumns = TableColumns::make();
+        if ($this->config->get('twill.enabled.users-image')) {
+            $tableColumns->add(
+                Image::make()
+                    ->field('image')
+                    ->title('Image')
+                    ->rounded()
+            );
+        }
+
+        $tableColumns->add(
+            Text::make()
+                ->field($this->titleColumnKey)
+                ->linkToEdit()
+                ->sortable(),
+        );
+
+        $tableColumns->add(
+            Text::make()
+                ->field('payroll_number')
+                ->title('Payroll Number')
+                ->sortable()
+        );
+
+
+        $tableColumns->add(
+            Text::make()
+                ->field(twillModel('user')::getRoleColumnName())
+                ->title('Role')
+                ->customRender(function (TwillModelContract $user) {
+                    if (TwillPermissions::enabled()) {
+                        return Str::title($user->role->name);
+                    }
+                    return Str::title($user->role);
+                })
+                ->sortable()
+        );
+
+        $tableColumns->add(
+            Text::make()
+                ->field('company_name')
+                ->title('Company')
+
+        );
+
+
+        $tableColumns->add(
+            Text::make()
+                ->field('department_name')
+                ->title('Department')
+
+        );
+
+        $tableColumns->add(
+            Text::make()
+                ->field('unit_name')
+                ->title('Unit')
+                ->sortable()
+        );
+
+        $tableColumns->add(
+            Text::make()
+                ->field('registered_at')
+                ->title('Registered At')
+                ->customRender(function (TwillModelContract $user) {
+                    return $user->registered_at ? $user->registered_at->format('d M Y, H:i') : '-';
+                })
+                ->sortable()
+        );
+
+        $tableColumns->add(
+            Text::make()
+                ->field('last_login_at')
+                ->title('Last Login')
+                ->customRender(function (TwillModelContract $user) {
+                    return $user->last_login_at ? $user->last_login_at->ago() : '-';
+                })
+                ->sortable()
+        );
+
+        return $tableColumns;
+    }
+
+
     public function uploadForm()
     {
 
@@ -127,7 +278,7 @@ class UserController extends TwillUserController
     {
         try {
 
-           $company = Company::findOrFail($request->company_id);
+            $company = Company::findOrFail($request->company_id);
 
             $fileName = 'Africa_Poultry_Development_Learning' . '_' . str_replace(' ', '_', $company->title) . '_user_credentials_' . now()->format('d-M-Y_Hi') . '.xlsx';
 
@@ -135,21 +286,19 @@ class UserController extends TwillUserController
 
             // dispatch job synchronously OR async depending on your need
 
-        //    $r= $userImportService->handle($rows, $request->company_id, $fileName);
+            //    $r= $userImportService->handle($rows, $request->company_id, $fileName);
 
-        //    dd($r);
-             ProcessUserUploadJob::dispatch($rows, $request->company_id, $fileName);
+            //    dd($r);
+            ProcessUserUploadJob::dispatch($rows, $request->company_id, $fileName);
 
-           
+
             Session::flash('download_url', $fileName);
             Session::flash('status', 'The User Upload has been initiated. The file will be downloaded once done. Please don\'t close this page.');
             return redirect()->route('twill.users.index')->with('download_url', $fileName);
-
         } catch (\Throwable $e) {
-            
-                \Log::error('User upload failed: ' . $e->getMessage());
-                return redirect()->back()->withErrors('Failed to process the file. Please ensure it is correctly formatted and try again.');
-           
+
+            \Log::error('User upload failed: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Failed to process the file. Please ensure it is correctly formatted and try again.');
         }
     }
 
@@ -180,66 +329,5 @@ class UserController extends TwillUserController
         return \Storage::download("exports/{$file}");
     }
 
-
-    public function store($parentModuleId = null)
-    {
-
-        $this->authorizeOption('create', $this->moduleName);
-
-        $parentModuleId = $this->getParentModuleIdFromRequest($this->request) ?? $parentModuleId;
-
-        $input = $this->request->all();
-
-
-        dd($input);
-
-
-        $optionalParent = $parentModuleId ? [$this->getParentModuleForeignKey() => $parentModuleId] : [];
-
-        if (isset($input['cmsSaveType']) && $input['cmsSaveType'] === 'cancel') {
-            return $this->respondWithRedirect(
-                moduleRoute(
-                    $this->moduleName,
-                    $this->routePrefix,
-                    'create'
-                )
-            );
-        }
-
-
-        $item = $this->repository->create($input + $optionalParent);
-
-        activity()->performedOn($item)->log('created');
-
-        $this->fireEvent($input);
-
-        Session::put($this->moduleName . '_retain', true);
-
-        if ($this->getIndexOption('editInModal')) {
-            return $this->respondWithSuccess(twillTrans('twill::lang.publisher.save-success'));
-        }
-
-        if (isset($input['cmsSaveType']) && Str::endsWith($input['cmsSaveType'], '-close')) {
-            return $this->respondWithRedirect($this->getBackLink());
-        }
-
-        if (isset($input['cmsSaveType']) && Str::endsWith($input['cmsSaveType'], '-new')) {
-            return $this->respondWithRedirect(
-                moduleRoute(
-                    $this->moduleName,
-                    $this->routePrefix,
-                    'create'
-                )
-            );
-        }
-
-        return $this->respondWithRedirect(
-            moduleRoute(
-                $this->moduleName,
-                $this->routePrefix,
-                'edit',
-                [Str::singular(last(explode('.', $this->moduleName))) => $this->getItemIdentifier($item)]
-            )
-        );
-    }
+    
 }

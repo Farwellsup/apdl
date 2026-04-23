@@ -28,6 +28,14 @@
             padding-left: 30px;
             padding-right: 30px;
         }
+
+        @media screen and (min-width: 1280px) {
+            .container {
+                width: 100% !important;
+                padding-right: 50px;
+                padding-left: 50px
+            }
+        }
     </style>
 @endpush
 

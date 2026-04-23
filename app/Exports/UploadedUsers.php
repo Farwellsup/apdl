@@ -22,6 +22,7 @@ class UploadedUsers implements FromArray, WithHeadings
     public function headings(): array
     {
         return [
+            'Name',
             'Payroll Number',
             'Password',
         ];

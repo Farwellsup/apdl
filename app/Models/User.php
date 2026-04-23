@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use A17\Twill\Models\Contracts\TwillModelContract;
 use A17\Twill\Models\User as TwillUser;
 
-class User extends TwillUser implements TwillModelContract
+class User extends TwillUser 
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -19,12 +19,7 @@ class User extends TwillUser implements TwillModelContract
     const GENDER_MALE = 2;
     const GENDER_UNDEFINED = 3;
 
-    public function __construct(array $attributes = [])
-    {
-        $this->table = config('twill.users_table', 'twill_users');
-
-        parent::__construct($attributes);
-    }
+   
 
     /**
      * The attributes that are mass assignable.
@@ -85,6 +80,13 @@ class User extends TwillUser implements TwillModelContract
         ];
     }
 
+
+  public function files()
+    {
+        return null;
+    }
+
+   
 
     public function hasRole($roles): bool
     {
