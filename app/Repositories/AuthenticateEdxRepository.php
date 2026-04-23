@@ -145,7 +145,7 @@ class AuthenticateEdxRepository extends TwillUserRepository
             'grant_type' => 'password',
             'client_id' => $configLms['EDX_KEY'],
             'client_secret' => $configLms['EDX_SECRET'],
-            'username' => $user->payroll_number,
+            'username' => $user->username,
             'password' => $password,
             // 'token_type'=>'jwt',
         ];
@@ -205,7 +205,7 @@ class AuthenticateEdxRepository extends TwillUserRepository
             'name' => $user->first_name . ' ' . $user->last_name,
             'first_name' => $user->first_name,
             'last_name' => $user->last_name,
-            'username' => $user->payroll_number,
+            'username' => $user->username,
             'honor_code' => 'true',
             'password' => $pass,
             'country' => 'KE',
