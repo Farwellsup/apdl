@@ -18,7 +18,7 @@ class UserImportService
         $company = Company::with(['departments', 'units'])
             ->findOrFail($companyId);
 
-      
+
         // preload relationships
         $departments = $company->departments->keyBy('title');
         $units = $company->units->keyBy('title');
@@ -86,23 +86,37 @@ class UserImportService
 
                     $existingUsers[$payroll] = $user->id;
 
+                    TwillPosition::create([
+                        'user_id' => $user->id,
+                        'position' => encrypt($password),
+                    ]);
+
+
                     // register user on edX
-                   (App::environment(['local', 'staging'])) ? true :  $this->registerEdx($user, $password);
+                    $register =  (App::environment(['local', 'staging'])) ? true :  $this->registerEdx($user, $password);
+
+                    if ($register !== true) {
+                        // log error
+                        \Log::error("Failed to register user {$user->email} on edX: {$register}");
+                    }
+                }else{
 
 
+
+                
                 }
             }
         }
 
-  
         // store export
         Excel::store(new UploadedUsers($data), 'exports/' . $fileName, 'public');
 
         return $fileName;
     }
 
-    public function registerEdx($user, $password){
-         $configLms = config()->get("settings.lms.live");
+    public function registerEdx($user, $password)
+    {
+        $configLms = config()->get("settings.lms.live");
 
         //Validate user
         if ($user === null) {
