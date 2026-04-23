@@ -124,11 +124,12 @@ class UserImportService
 
                     if (App::environment(['local', 'staging'])) {
 
-                       dd("User {$user->email} already exists on edX");
                         return true;
 
 
                     } else {
+
+                        $user = User::find($existingUsers[$payroll]);
 
                         $edxUser = EdxAuthUser::where('username', $user->username)->first();
 
