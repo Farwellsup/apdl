@@ -21,7 +21,7 @@ return [
             'LMS_REGISTRATION_URL' => 'https://lms.farwell-consultants.com/user_api/v1/account/registration/',
             'LMS_LOGIN_URL' => 'https://lms.farwell-consultants.com/user_api/v1/account/login_session/',
             'LMS_RESET_PASSWORD_PAGE' => 'https://lms.farwell-consultants.com/user_api/v1/account/password_reset/',
-            'LMS_RESET_PASSWORD_API_URL' => 'https://lms.farwell-consultants.com/user_api/v1/account/password_reset/',
+            'LMS_RESET_PASSWORD_API_URL' => 'https://lms.farwell-consultants.com/user_api/v1/account/password_change/',
             'edxWebServiceApiToken' => 'c90685ce8bc75a8e03ad35deb28a5fade4a4cc87',
             'default_token' => '133ad7f0ecd269b63637a522dbb529c50475a493'
         ],

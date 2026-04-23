@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use A17\Twill\Models\Contracts\TwillModelContract;
 use A17\Twill\Models\User as TwillUser;
 
-class User extends TwillUser 
+class User extends TwillUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -19,7 +19,7 @@ class User extends TwillUser
     const GENDER_MALE = 2;
     const GENDER_UNDEFINED = 3;
 
-     public function __construct(array $attributes = [])
+    public function __construct(array $attributes = [])
     {
         $this->table = config('twill.users_table', 'twill_users');
 
@@ -86,29 +86,29 @@ class User extends TwillUser
     }
 
 
- 
-
    
+
+
 
     public function hasRole($roles): bool
     {
         return in_array(optional($this->role)->name, (array) $roles);
     }
 
-     public static function getGender()
+    public static function getGender()
     {
         $types = array(
             array(
                 'id' => self::GENDER_FEMALE,
-                'title'=>'Female'
+                'title' => 'Female'
             ),
             array(
                 'id' => self::GENDER_MALE,
-                'title'=>'Male'
+                'title' => 'Male'
             ),
             array(
                 'id' => self::GENDER_UNDEFINED,
-                'title'=>'Undefined'
+                'title' => 'Undefined'
             ),
         );
         return $types;
@@ -126,7 +126,7 @@ class User extends TwillUser
     }
 
 
-     public function unit()
+    public function unit()
     {
         return $this->belongsTo(Unit::class);
     }
@@ -134,7 +134,7 @@ class User extends TwillUser
     {
         return $this->belongsTo(Department::class);
     }
-    
+
     public function country()
     {
         return $this->belongsTo(Country::class);
