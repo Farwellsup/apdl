@@ -112,7 +112,20 @@ class UserImportService
                                 \Log::error("Failed to register user {$user->email} on edX:");
                                 // \Log::error("Failed to register user {$user->email} on edX: {json_encode($register)}"); --- IGNORE ---
                             }
+
+                            $eUser = EdxAuthUser::where('username', $user->username)->first();
+                            if ($eUser) {
+                                $eUser->first_name = $user->first_name;
+                                $eUser->last_name = $user->last_name;
+                                $eUser->active = true;
+                                $eUser->save();
+                            }
                         } else {
+
+                            $user->update([
+                                'password' => Hash::make($password),
+                            ]);
+
                             \Log::info("User {$user->email} already exists on edX");
 
                             (App::environment(['local', 'staging'])) ? true : app(AuthenticateEdxRepository::class)->resetEdxPassword($user, $password);
@@ -120,18 +133,20 @@ class UserImportService
                         }
                     }
                 } else {
-                    
+
 
                     if (App::environment(['local', 'staging'])) {
 
                         return true;
-
-
                     } else {
 
                         $user = User::find($existingUsers[$payroll]);
 
                         $edxUser = EdxAuthUser::where('username', $user->username)->first();
+
+                        $user->update([
+                            'password' => Hash::make($password),
+                        ]);
 
                         if (!$edxUser) {
 
@@ -142,12 +157,15 @@ class UserImportService
                                 \Log::error("Failed to register user {$user->email} on edX:");
                                 // \Log::error("Failed to register user {$user->email} on edX: {json_encode($register)}"); --- IGNORE ---
                             }
-                        } else {
-                            \Log::info("User {$user->email} already exists on edX");
 
-                            (App::environment(['local', 'staging'])) ? true : app(AuthenticateEdxRepository::class)->resetEdxPassword($user, $password);
-                            // app(AuthenticateEdxRepository::class)->resetEdxPassword($user, $password); --- IGNORE ---
-                        }
+                            $eUser = EdxAuthUser::where('username', $user->username)->first();
+                            if ($eUser) {
+                                $eUser->first_name = $user->first_name;
+                                $eUser->last_name = $user->last_name;
+                                $eUser->active = true;
+                                $eUser->save();
+                            }
+                        } 
                     }
                 }
             }

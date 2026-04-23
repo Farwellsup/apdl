@@ -15,11 +15,16 @@ class User extends TwillUser
     use HasFactory, Notifiable;
 
 
-     const GENDER_FEMALE = 1;
+    const GENDER_FEMALE = 1;
     const GENDER_MALE = 2;
     const GENDER_UNDEFINED = 3;
 
-   
+     public function __construct(array $attributes = [])
+    {
+        $this->table = config('twill.users_table', 'twill_users');
+
+        parent::__construct($attributes);
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -81,10 +86,7 @@ class User extends TwillUser
     }
 
 
-  public function files()
-    {
-        return null;
-    }
+ 
 
    
 
