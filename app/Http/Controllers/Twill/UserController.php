@@ -159,7 +159,7 @@ class UserController extends TwillUserController
     }
 
 
-       private function getRoleList()
+    private function getRoleList()
     {
         if (config('twill.enabled.permissions-management')) {
             return twillModel('role')::accessible()->published()->get()->map(function ($role) {
@@ -286,15 +286,16 @@ class UserController extends TwillUserController
 
             // dispatch job synchronously OR async depending on your need
 
-           // $r = $userImportService->handle($rows, $request->company_id, $fileName);
+            //    $r = $userImportService->handle($rows, $request->company_id, $fileName);
 
-           // dd($r);
+            //    dd($r);
 
             ProcessUserUploadJob::dispatch($rows, $request->company_id, $fileName);
 
 
             Session::flash('download_url', $fileName);
             Session::flash('status', 'The User Upload has been initiated. The file will be downloaded once done. Please don\'t close this page.');
+
             return redirect()->route('twill.users.index')->with('download_url', $fileName);
         } catch (\Throwable $e) {
 
@@ -308,18 +309,22 @@ class UserController extends TwillUserController
     {
         $fileName = $request->query('file');
         $filePath = 'exports/' . $fileName;
+        $errorsFilePath = 'exports/errors_' . $fileName;
 
-        if (Storage::disk('public')->exists($filePath)) {
+        if (Storage::disk('public')->exists($filePath) || Storage::disk('public')->exists($errorsFilePath)) {
             return response()->json([
-                'ready' => Storage::disk('public')->exists($filePath),
-                'url' => Storage::disk('public')->exists($filePath) ? Storage::disk('public')->url($filePath) : null
+                'ready' => true,
+                'url' => Storage::disk('public')->url($filePath),
+                'errors_url' => Storage::disk('public')->url($errorsFilePath),
             ]);
         } else {
             $filePath = "exports/'" . $fileName . "'";
+            $errorsFilePath = "exports/'errors_" . $fileName . "'";
 
             return response()->json([
                 'ready' => Storage::disk('public')->exists($filePath),
-                'url' => Storage::disk('public')->exists($filePath) ? Storage::disk('public')->url($filePath) : null
+                'url' => Storage::disk('public')->exists($filePath) ? Storage::disk('public')->url($filePath) : null,
+                'errors_url' => Storage::disk('public')->exists($errorsFilePath) ? Storage::disk('public')->url($errorsFilePath) : null
             ]);
         }
     }
@@ -329,6 +334,4 @@ class UserController extends TwillUserController
     {
         return \Storage::download("exports/{$file}");
     }
-
-    
 }

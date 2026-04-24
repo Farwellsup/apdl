@@ -272,10 +272,20 @@
                     link.click();
                     document.body.removeChild(link);
 
+
+
+                   // Error file download
+                    const error = document.createElement('a');
+                    error.href = data.errors_url;
+                    error.download = 'errors_' + fileName;
+                    document.body.appendChild(error);
+                    error.click();
+                    document.body.removeChild(error);
+
                     // messageEl.innerText = 'Download started!';
                 } else {
                     // messageEl.innerText = 'Generating your Excel file... please wait.';
-                    console.log('File not ready yet...');
+                   // console.log('File not ready yet...');
                 }
             }
 

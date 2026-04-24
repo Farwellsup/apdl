@@ -72,6 +72,8 @@ class AuthenticatedSessionController extends Controller
 
                 $edxStatus  =   App::environment(['local', 'staging']) ? true : $this->edxRepository->edxLogin($user, $request->input('password'));
 
+                
+
                 if (!$edxStatus) {
 
                     $this->destroy($request);

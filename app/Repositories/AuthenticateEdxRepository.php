@@ -92,7 +92,7 @@ class AuthenticateEdxRepository extends TwillUserRepository
 
         $loggedInCookies = $response->getHeader('Set-Cookie');
 
-        
+     
 
         $setCookies = [];
         foreach ($loggedInCookies as $userCookie) {
