@@ -104,7 +104,6 @@ class EdxUserImportService
                                 'city',
                                 'country',
                                 'goals',
-                                'allow_certificate',
                                 'bio',
                                 'profile_image_uploaded_at',
                                 'user_id',
