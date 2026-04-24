@@ -12,7 +12,7 @@ return [
         'status' => 'test',
         'live' => [
             'EDX_KEY' => 'login-service-client-id',
-            'EDX_SECRET' => '1z6y6HGNcMsHw5lMcyF191dJzlzHdjwMMGMTyFxmrzvpD5T8oAJzhVuiDSRjwX7d42Ziz7cPleTR16XhCvWj1Dq2Ez0TK7UK0I3ajd3JxwFyqWiYiEmXMDpmLd5A57Ha',
+            'EDX_SECRET' => 'vs5mEfkJNjxXnHvo4p97rnIvhOI4ehE3FcKynxi3OSuPH6W7YM1B2pT5zy8K4QFs1SSvIgJb9dY9mwlyqACYqLrtbsx45XXb1m7saOuc5MQxpV56H7IniSZCpTxVjsKg',
             'EDX_CONNECT' => true,
             'COOKIE_DOMAIN' => 'lms.farwell-consultants.com',
             'LMS_DOMAIN' => 'https://lms.farwell-consultants.com',
