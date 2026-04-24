@@ -123,4 +123,8 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+
+     'platform_settings' => [
+        'app_hmac_key' => env('APP_HMAC_KEY'),
+    ],
 ];

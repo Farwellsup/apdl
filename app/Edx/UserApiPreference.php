@@ -8,17 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use DB;
 use Cookie;
 
-class StudentCourseCompletion extends Model
+class UserApiPreference extends Model
 {
   //set connection for model
   protected $connection = 'edx_mysql';
 
   //Set table for model
-  protected $table = 'courseware_studentmodule';
+  protected $table = 'user_api_userpreference';
 
-  public function edx_user(){
-    return $this->belongsTo('App\Edx\EdxAuthUser','user_id');
-  }
 
   public function course(){
     return $this->belongsTo('App\Courses');

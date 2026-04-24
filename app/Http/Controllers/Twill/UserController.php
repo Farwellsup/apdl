@@ -286,11 +286,11 @@ class UserController extends TwillUserController
 
             // dispatch job synchronously OR async depending on your need
 
-            //    $r = $userImportService->handle($rows, $request->company_id, $fileName);
+               $r = $userImportService->handle($rows, $request->company_id, $fileName);
 
-            //    dd($r);
+               dd($r);
 
-            ProcessUserUploadJob::dispatch($rows, $request->company_id, $fileName);
+           // ProcessUserUploadJob::dispatch($rows, $request->company_id, $fileName);
 
 
             Session::flash('download_url', $fileName);

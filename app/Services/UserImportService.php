@@ -16,6 +16,7 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
 use App;
 use App\Repositories\AuthenticateEdxRepository;
+use App\Services\EdxUserImportService;
 
 class UserImportService
 {
@@ -35,6 +36,7 @@ class UserImportService
 
         $data = [];
         $errors = [];
+        $edxUsers = [];
 
         foreach (array_chunk($rows, 300) as $chunk) {
             foreach ($chunk as $row) {
@@ -58,6 +60,8 @@ class UserImportService
                 $email = $payroll . '@' . str_replace(' ', '-', $company->title) . '.com';
 
                 $password = Str::random(9);
+
+
 
                 // collect credentials for export
                 $data[] = [
@@ -114,8 +118,8 @@ class UserImportService
                             if ($register !== true) {
                                 // log error
                                 \Log::error("Failed to register user {$user->email} on edX:" . json_encode($register));
-                                   
-                                $errors[] =[
+
+                                $errors[] = [
                                     'name' => $user->name,
                                     'payroll_number' => $user->payroll_number,
                                     'error' => is_array($register) ? json_encode($register) : $register,
@@ -144,82 +148,39 @@ class UserImportService
                                 // log error
                                 \Log::error("Failed to reset password for user {$user->email} on {$password}edX: " . json_encode($reset));
                                 // \Log::error("Failed to reset password for user {$user->email} on edX: {json_encode($reset)}"); --- IGNORE ---
-                                $errors[] =[
+                                $errors[] = [
                                     'name' => $user->name,
                                     'payroll_number' => $user->payroll_number,
                                     'error' => is_array($reset) ? json_encode($reset) : $reset,
                                 ];
-
                             }
-                            
                         }
                     }
                 } else {
 
-                    if (App::environment(['local', 'staging'])) {
+                    $user = User::find($existingUsers[$payroll]);
 
-                        return true;
+                    $edxUsers[] = [
+                        'first_name' => $user->first_name,
+                        'last_name' => $user->last_name,
+                        'email' => $user->email,
+                        'username' => $user->username,
+                        'password' => $password,
+                    ];
+
+                    $edxUserImport =   app(EdxUserImportService::class)->handle($edxUsers);
+
+                    if (is_array($edxUserImport) && !$edxUserImport['status']) {
+                        // log error
+                        \Log::error("Failed to import user {$user->email} to edX: " . $edxUserImport['message']);
+                        // \Log::error("Failed to import user {$user->email} to edX: {json_encode($edxUserImport)}"); --- IGNORE ---
+                        $errors[] = [
+                            'name' => 'Import to edx',
+                            'payroll_number' => 'import to test',
+                            'error' => $edxUserImport['message'],
+                        ];
                     } else {
-
-
-                        $user = User::find($existingUsers[$payroll]);
-
-                        if(empty($user->username) && empty($row['username'])) {
-                            $user->update([
-                                'username' => $payroll,
-                            ]);
-                        } 
-
-                        $edxUser = EdxAuthUser::where('email', $user->email)->first();
-
-                        if (!$edxUser) {
-
-                            $register = app(AuthenticateEdxRepository::class)->edxRegister($user, $password);
-
-
-
-                            if ($register !== true) {
-                                // log error
-                                \Log::error("Failed to register user {$user->email} on edX:" . json_encode($register));
-                                // \Log::error("Failed to register user {$user->email} on edX: {json_encode($register)}"); --- IGNORE ---
-                                $errors[] =[
-                                    'name' => $user->name,
-                                    'payroll_number' => $user->payroll_number,
-                                    'error' => is_array($register) ? json_encode($register) : $register,
-                                ];
-                            }
-
-                            $eUser = EdxAuthUser::where('username', $user->username)->first();
-                            if ($eUser) {
-                                $eUser->first_name = $user->first_name;
-                                $eUser->last_name = $user->last_name;
-                                $eUser->is_active = true;
-                                $eUser->save();
-                            }
-                        } else {
-
-                            $user->update([
-                                'password' => Hash::make($password),
-                            ]);
-
-                            $edxUser->first_name = $user->first_name;
-                            $edxUser->last_name = $user->last_name;
-                            $edxUser->is_active = true;
-                            $edxUser->save();
-
-                            $reset = app(AuthenticateEdxRepository::class)->resetEdxPassword($user, $password);
-
-                            if ($reset !== true) {
-                                // log error
-                                \Log::error("Failed to reset password for user {$user->email} on {$password}edX: " . json_encode($reset));
-                                // \Log::error("Failed to reset password for user {$user->email} on edX: {json_encode($reset)}"); --- IGNORE ---
-                                $errors[] =[
-                                    'name' => $user->name,
-                                    'payroll_number' => $user->payroll_number,
-                                    'error' => is_array($reset) ? json_encode($reset) : $reset,
-                                ];
-                            }
-                        }
+                        \Log::info("Successfully imported user {$user->email} to edX.");
                     }
                 }
                 // sleep for 20 seconds after processing each chunk to avoid overwhelming the LMS API
