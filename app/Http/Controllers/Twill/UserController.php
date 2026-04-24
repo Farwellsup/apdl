@@ -317,7 +317,7 @@ class UserController extends TwillUserController
                 'url' => Storage::disk('public')->url($filePath),
                 'errors_url' => Storage::disk('public')->url($errorsFilePath),
             ]);
-        } else {
+        }else {
             $filePath = "exports/'" . $fileName . "'";
             $errorsFilePath = "exports/'errors_" . $fileName . "'";
 

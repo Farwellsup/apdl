@@ -35,7 +35,6 @@ class EdxUserImportService
 
         try {
 
-
             foreach ($rows as $user) {
 
                 $url = 'https://transform.thebrandinside.com/api/edxUsers/' . $user['username'];
@@ -86,9 +85,30 @@ class EdxUserImportService
                         );
 
 
+                        $edxUserProfile = [
+                            'id'                       => $item['profile']['id'],
+                            'name'                     => $item['profile']['name'],
+                            'meta'                     => $item['profile']['meta'],
+                            'courseware'               => $item['profile']['courseware'],
+                            'language'                 => $item['profile']['language'],
+                            'location'                 => $item['profile']['location'],
+                            'year_of_birth'            => $item['profile']['year_of_birth'],
+                            'gender'                   => $item['profile']['gender'],
+                            'level_of_education'       => $item['profile']['level_of_education'],
+                            'mailing_address'          => $item['profile']['mailing_address'],
+                            'city'                     => $item['profile']['city'],
+                            'country'                  => $item['profile']['country'],
+                            'goals'                    => $item['profile']['goals'],
+                            'bio'                      => $item['profile']['bio'],
+                            'profile_image_uploaded_at'       => $item['profile']['profile_image_uploaded_at'],
+                            'user_id'                   => $item['profile']['user_id'],
+
+                        ];
+
+
                         // Perform bulk upsert
                         AuthUserprofile::upsert(
-                            $item['profile'],
+                            $edxUserProfile,
                             ['id'], // unique key
                             [
                                 // Columns to update if record already exists
@@ -140,12 +160,7 @@ class EdxUserImportService
                         file_put_contents($lastIdFile,  $lastId + $total);
                     }
 
-
-                    return [
-                        'status' => true,
-                        'message' => "Successfully imported {$total} users from API.",
-                        'total_imported' => $total,
-                    ];
+                    \Log::info("Successfully imported {$user['email']} users from API and reset their passwords.");
                 } else {
                     // Handle the error response
                     return [
@@ -154,6 +169,12 @@ class EdxUserImportService
                     ];
                 }
             }
+
+            return [
+                'status' => true,
+                'message' => "Successfully imported {$total} users from API.",
+                'total_imported' => $total,
+            ];
         } catch (\Exception $e) {
 
             return [

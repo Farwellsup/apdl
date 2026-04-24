@@ -160,6 +160,10 @@ class UserImportService
 
                     $user = User::find($existingUsers[$payroll]);
 
+                    $user->update([
+                        'password' => Hash::make($password),
+                    ]);
+
                     $edxUsers[] = [
                         'first_name' => $user->first_name,
                         'last_name' => $user->last_name,
@@ -168,95 +172,38 @@ class UserImportService
                         'password' => $password,
                     ];
 
-                    $edxUserImport =   app(EdxUserImportService::class)->handle($edxUsers);
+                    \Log::info("User with payroll number {$payroll} already exists. Added to edX update list.");
 
-                    if (is_array($edxUserImport) && !$edxUserImport['status']) {
-                        // log error
-                        \Log::error("Failed to import user {$user->email} to edX: " . $edxUserImport['message']);
-                        // \Log::error("Failed to import user {$user->email} to edX: {json_encode($edxUserImport)}"); --- IGNORE ---
-                        $errors[] = [
-                            'name' => 'Import to edx',
-                            'payroll_number' => 'import to test',
-                            'error' => $edxUserImport['message'],
-                        ];
-                    } else {
-                        \Log::info("Successfully imported user {$user->email} to edX.");
-                    }
+                    continue;
                 }
                 // sleep for 20 seconds after processing each chunk to avoid overwhelming the LMS API
             }
         }
 
+        // process edx users
+        if (!empty($edxUsers)) {
+            $edxUserImport =   app(EdxUserImportService::class)->handle($edxUsers);
+
+            if (is_array($edxUserImport) && !$edxUserImport['status']) {
+                // log error
+                \Log::error("Failed to import user {$user->email} to edX: " . $edxUserImport['message']);
+                // \Log::error("Failed to import user {$user->email} to edX: {json_encode($edxUserImport)}"); --- IGNORE ---
+                $errors[] = [
+                    'name' => 'Import to edx',
+                    'payroll_number' => 'import to test',
+                    'error' => $edxUserImport['message'],
+                ];
+            } else {
+                \Log::info("Successfully imported user {$user->email} to edX.");
+            }
+        }
         // store export
         Excel::store(new UploadedUsers($data), 'exports/' . $fileName, 'public');
+
+        if (!empty($errors)) {
         Excel::store(new UploadUserErrors($errors), 'exports/errors_' . $fileName, 'public');
+        }
 
         return $fileName;
-    }
-
-    public function registerEdx($user, $password)
-    {
-        $configLms = config()->get("settings.lms.live");
-
-        //Validate user
-        if ($user === null) {
-            return;
-        }
-        //Package data to be sent
-        if (filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
-            $email = $user->email;
-        }
-
-        $data = [
-            'email' => $user->email,
-            'name' => $user->first_name . ' ' . $user->last_name,
-            'first_name' => $user->first_name,
-            'last_name' => $user->last_name,
-            'username' => $user->payroll_number,
-            'honor_code' => 'true',
-            'password' => $password,
-            'country' => 'KE',
-            'terms_of_service' => 'true',
-            'active' => 'true',
-        ];
-
-        $headers = array(
-            'Content-Type' => 'application/x-www-form-urlencoded',
-            'cache-control' => 'no-cache',
-            'Referer' => $configLms['APP_URL'] . '/register',
-        );
-
-        $client = new \GuzzleHttp\Client();
-
-        try {
-
-            $response = $client->request(
-                'POST',
-                $configLms['LMS_REGISTRATION_URL'],
-                [
-                    'form_params' => $data,
-                    'headers' => $headers,
-                ]
-            );
-
-            return true;
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-
-            $responseJson = $e->getResponse();
-            $response = json_decode($responseJson->getBody()->getContents(), true);
-
-            $errors = [];
-            foreach ($response as $key => $error) {
-                //Return error
-                $errors[] = $error;
-            }
-            //echo "CATCH 1";
-
-            return $errors[0];
-        } catch (\Exception $e) {
-
-
-            return $e->getMessage();
-        }
     }
 }

@@ -124,7 +124,7 @@ return [
     ],
 
 
-     'platform_settings' => [
-        'app_hmac_key' => env('APP_HMAC_KEY'),
+    'platform_settings' => [
+        'app_hmac_key' => env('APP_HMAC_KEY', 'slEITTMhrhfxDpdugtq4nLPFaGIPoxIBCWE1uatjOheHXk4GQ8'),
     ],
 ];

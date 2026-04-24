@@ -92,7 +92,7 @@ class AuthenticateEdxRepository extends TwillUserRepository
 
         $loggedInCookies = $response->getHeader('Set-Cookie');
 
-     
+   
 
         $setCookies = [];
         foreach ($loggedInCookies as $userCookie) {
@@ -151,6 +151,8 @@ class AuthenticateEdxRepository extends TwillUserRepository
         ];
 
 
+    
+
 
         $tokenUrl = $configLms['LMS_BASE'] . '/oauth2/access_token/';
         //Get authorization token
@@ -159,8 +161,7 @@ class AuthenticateEdxRepository extends TwillUserRepository
             ->withResponseHeaders()
             ->returnResponseObject()
             ->post();
-
-
+      
         if ($accessResponse->status !== 200) {
             return false;
         }
