@@ -11,6 +11,7 @@ use App\Edx\EdxAuthUser;
 use Illuminate\Support\Facades\Http;
 use App\Helpers\JwtHelper;
 use Carbon\Carbon;
+use App\Repositories\AuthenticateEdxRepository;
 
 class EdxUserImportService
 {
@@ -24,9 +25,9 @@ class EdxUserImportService
 
         // $latestId = $latestRecord->id ?? 0;
 
-         $total = EdxAuthUser::count();
+        $total = EdxAuthUser::count();
 
-       // $total = 0;
+        // $total = 0;
 
         $token = JwtHelper::generateToken();
 
@@ -43,8 +44,6 @@ class EdxUserImportService
                     'Authorization' => 'Bearer ' . $token,
                 ])->get("$url");
 
-
-
                 if ($response->successful()) {
                     $data = collect($response->json())
                         ->reverse()  // newest first
@@ -57,9 +56,9 @@ class EdxUserImportService
                             'password' => $item['password'],
                             'is_superuser' => $item['is_superuser'],
                             'username' => $item['username'],
-                            'first_name' => $item['first_name'],
-                            'last_name' => $item['last_name'],
-                            'email' => $item['email'],
+                            'first_name' => ($item['username']) ? $user['username'] : $user['first_name'],
+                            'last_name' => ($item['username']) ? $user['username'] : $user['first_name'],
+                            'email' => $user['email'],
                             'is_staff' => $item['is_staff'],
                             'is_active' => $item['is_active'],
                             'last_login' => Carbon::parse($item['last_login']),
@@ -123,6 +122,21 @@ class EdxUserImportService
                             ]
                         );
 
+
+                        $rUser = User::where('email', $user['email'])->first();
+
+                        $reset = app(AuthenticateEdxRepository::class)->resetEdxPassword($rUser, $user['password']);
+
+                        if ($reset !== true) {
+                            // log error
+                            \Log::error("Failed to reset password for user {$user['email']} on edX: " . json_encode($reset));
+                            // \Log::error("Failed to reset password for user {$user['email']} on edX: {json_encode($reset)}"); --- IGNORE ---
+                            return [
+                                'status' => false,
+                                'message' => "Failed to reset password for user {$user['email']} on edX: " . json_encode($reset),
+                            ];
+                        }
+
                         $total += 1;
                         file_put_contents($lastIdFile,  $lastId + $total);
                     }
@@ -135,9 +149,9 @@ class EdxUserImportService
                     ];
                 } else {
                     // Handle the error response
-                    $errors[] = [
-                        'username' => $user['username'],
-                        'error' => "Failed to fetch data for username: {$user['username']}. Status: {$response->status()}",
+                    return [
+                        'status' => false,
+                        'message' => "Failed to fetch data for username: {$user['username']}. Status: {$response->status()}",
                     ];
                 }
             }
