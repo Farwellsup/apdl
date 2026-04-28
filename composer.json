@@ -6,7 +6,7 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "area17/twill": "^3.5",
         "ixudra/curl": "^6.23",
         "laravel/framework": "^12.0",
