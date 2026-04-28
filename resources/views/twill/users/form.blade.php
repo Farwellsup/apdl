@@ -18,6 +18,7 @@
             <x-twill::input name="payroll_number" :label="twillTrans('Payroll Number')" />
         @endslot
         @endformColumns
+ 
         @formColumns
         @slot('left')
             <x-twill::select name="company_id" :label="twillTrans('Company')" :options="$companyOptions ?? []" :placeholder="twillTrans('Select a company')" />

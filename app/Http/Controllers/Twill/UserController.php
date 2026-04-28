@@ -43,14 +43,20 @@ class UserController extends TwillUserController
     protected $namespace = 'App';
     protected $moduleName = 'users';
     protected $titleColumnKey = 'name';
+
+
     protected $indexOptions = [
-        'editInModal' => false,
-        'skipCreateModal' => true,
+        'editInModal' => true,
+        'skipCreateModal' => false,
         'includeScheduledInList' => true,
         'showImage' => false,
         'sortable' => true,
     ];
 
+
+    protected $defaultOrders = [
+        'created_at' => 'desc',
+    ];
 
     protected function formData($request)
     {
@@ -151,10 +157,39 @@ class UserController extends TwillUserController
 
     protected function indexData($request)
     {
+        $currentUser = $this->authFactory->guard('twill_users')->user();
+
+        if (TwillPermissions::levelIs(PermissionLevel::LEVEL_ROLE_GROUP_ITEM)) {
+            $permissionsData = [
+                'permissionModules' => $this->getPermissionModules(),
+            ];
+        }
+        $isGroupHr = $currentUser->hasRole('Group HR') || $currentUser->role_id === 3;
+        $isCompanyHr = $currentUser->hasRole('Company HR') || $currentUser->role_id === 4;
+
+        $companyOptions = collect($isCompanyHr ? Company::published()->where('id', $currentUser->company_id)->pluck('title', 'id')->toArray() : Company::published()->pluck('title', 'id')->toArray())->map(function ($item, $key) {
+            return ['value' => $key, 'label' => $item];
+        })->values()->toArray();
+        $unitOptions = collect($isCompanyHr ? Unit::published()->where('id', $currentUser->company_id)->pluck('title', 'id')->toArray() : Unit::published()->pluck('title', 'id')->toArray())->map(function ($item, $key) {
+            return ['value' => $key, 'label' => $item];
+        })->values()->toArray();
+        $departmentOptions = collect($isCompanyHr ? Department::published()->where('id', $currentUser->company_id)->pluck('title', 'id')->toArray() : Department::published()->pluck('title', 'id')->toArray())->map(function ($item, $key) {
+            return ['value' => $key, 'label' => $item];
+        })->values()->toArray();
+        $countryOptions = collect(Country::published()->pluck('title', 'id')->toArray())->map(function ($item, $key) {
+            return ['value' => $key, 'label' => $item];
+        })->values()->toArray();
+
         return [
             'defaultFilterSlug' => 'activated',
             'create' => $this->getIndexOption('create') && $this->user->can('edit-users'),
-            'companyList' => app(CompanyRepository::class)->listAll('title'),
+            'roleList' => $this->getRoleList(),
+            'isGroupHr' => $isGroupHr,
+            'isCompanyHr' => $isCompanyHr,
+            'companyOptions' => $companyOptions,
+            'unitOptions' => $unitOptions,
+            'departmentOptions' => $departmentOptions,
+            'countryOptions' => $countryOptions,
         ];
     }
 

@@ -100,15 +100,15 @@
 
                     @if ($create)
                         <div slot="additional-actions">
-                            {{-- <a17-button
+                            <a17-button
                                 variant="validate"
                                 size="small"
 
                                 @if ($skipCreateModal) href={{$createUrl ?? ''}} el="a" @endif
                                 @if (!$skipCreateModal) v-on:click="create" @endif
                             >
-                                Upload Users
-                            </a17-button> --}}
+                               Add User
+                            </a17-button>
                             <a href="{{ route('twill.uploadForm') }}" class="button button--small button--validate"
                                 style="background: #1d9f3c;color: #fff;">Upload Users</a>
                             <a href="{{ asset('assets/templates/new_users.xlsx') }}" target="_blank"> New Users

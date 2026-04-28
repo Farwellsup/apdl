@@ -95,24 +95,46 @@
     </style>
 @endpush
 
-<x-twill::select name="company_id" label="Company" :native="true" :options="$companyList ?? []" placeholder="Select a company"
-    :required="true" />
 
-<div class="locale">
-    <div class="locale__item">
-        <div class="input input-wrapper-user_list" data-lang="en" fieldname="user_list" initialvalue="">
-            <label for="user_list" class="input__label"> User File<!----><!----><!----></label><!---->
-            <div class="fileField"><!----><!---->
-                <div class="fileField__trigger">
-                    <input type="file" name="user_list[en]" id="fileInput" style="display:none">
-                    <button data-v-59eeac35="" type="button" class="button button--ghost"
-                        onclick="document.getElementById('fileInput').click()">Upload file</button>
-                    <span class="fileField__note f--small">Add excel sheet with users details.</span>
-                </div>
-            </div><!----><!---->
-        </div>
-    </div>
-</div>
+@can('edit-users')
+    @formColumns
+    @slot('left')
+        <x-twill::input name="first_name" :label="twillTrans('First Name')" required />
+    @endslot
+
+    @slot('right')
+        <x-twill::input name="last_name" :label="twillTrans('Last Name')" required />
+    @endslot
+
+    @endformColumns
+    @formColumns
+
+    @slot('left')
+        <x-twill::input name="payroll_number" :label="twillTrans('Payroll Number')" required />
+    @endslot
+    @slot('right')
+        <x-twill::input name="password" :label="twillTrans('Password')" type="password" required />
+    @endslot
+    @endformColumns
+    @formColumns
+    @slot('left')
+        <x-twill::select name="company_id" :label="twillTrans('Company')" :options="$companyOptions ?? []" :placeholder="twillTrans('Select a company')" required />
+    @endslot
+    @slot('right')
+        <x-twill::select name="department_id" :label="twillTrans('Department')" :options="$departmentOptions ?? []" :placeholder="twillTrans('Select a department')" />
+    @endslot
+    @endformColumns
+    @formColumns
+    @slot('left')
+        <x-twill::select name="unit_id" :label="twillTrans('Unit')" :options="$unitOptions ?? []" :placeholder="twillTrans('Select a unit')" />
+    @endslot
+    @slot('right')
+        <x-twill::select name="country_id" :label="twillTrans('Country')" :options="$countryOptions ?? []" :placeholder="twillTrans('Select a country')" />
+    @endslot
+    @endformColumns
+@endcan
+
+
 
 
 @push('extra_js')
@@ -122,9 +144,9 @@
                 const modal = document.querySelector('.modal');
                 if (modal) {
                     const form = modal.querySelector('form');
-            if (form) {
-                form.enctype = 'multipart/form-data';
-            }
+                    if (form) {
+                        form.enctype = 'multipart/form-data';
+                    }
                 }
             }, 150);
         });
